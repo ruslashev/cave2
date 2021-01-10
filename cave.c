@@ -18,7 +18,6 @@
 long posx, posy, posz, horiz, xdim, ydim;
 long newposz, vel, svel, angvel;
 short ang, pixs, vidmode, detmode;
-short moustat, mousx, mousy;
 
 char h1[65536], c1[65536];
 char h2[65536], c2[65536];
@@ -29,16 +28,6 @@ unsigned char palookup[MAXPALOOKUPS<<8], palette[768];
 
 volatile char keystatus[256];
 volatile long clockspeed, totalclock, numframes;
-
-void setvmode (long);
-#pragma aux setvmode =\
-	"int 0x10"\
-	parm [eax]
-
-void drawpixel (long, long);
-#pragma aux drawpixel =\
-	"mov byte ptr [edi], al"\
-	parm [edi][eax]
 
 long scale (long, long, long);
 #pragma aux scale =\
@@ -110,22 +99,6 @@ long drawbotslab (long, long, long);
 	"loop startdrawb"\
 	"skipdraw4b: mov eax, edi"\
 	parm [edi][ecx][eax] modify [edi ecx eax]
-
-void setupmouse ();
-#pragma aux setupmouse =\
-	"mov ax, 0"\
-	"int 33h"\
-	"mov moustat,1"
-
-void readmouse ();
-#pragma aux readmouse =\
-	"mov ax, 11d"\
-	"int 33h"\
-	"sar cx, 1"\
-	"sar dx, 1"\
-	"mov mousx, cx"\
-	"mov mousy, dx"\
-	modify [ax cx dx]
 
 //------------------------ Simple PNG OUT code begins ------------------------
 FILE *pngofil;
@@ -212,7 +185,6 @@ void main ()
 	loadtables();
 	loadboard();
 
-	setupmouse();
 	clockspeed = 0L;
 	totalclock = 0L;
 	numframes = 0L;
@@ -283,12 +255,7 @@ void main ()
 		vel = 0L;
 		svel = 0L;
 		angvel = 0;
-		if (moustat == 1)
-		{
-			readmouse();
-			ang += mousx;
-			vel = (((long)-mousy)<<3);
-		}
+
 		if (keystatus[0x4e] > 0) horiz += clockspeed;
 		if (keystatus[0x4a] > 0) horiz -= clockspeed;
 		if (keystatus[0x1e] > 0)
@@ -380,7 +347,7 @@ void main ()
 		clockspeed = 0L;
 	}
 	outp(0x43,54); outp(0x40,255); outp(0x40,255);
-	setvmode(0x3);
+
 	if (totalclock != 0)
 	{
 		templong = (numframes*24000L)/totalclock;
@@ -408,7 +375,6 @@ void setscreenmode ()
 {
 	long i, fil;
 
-	setvmode(0x13);
 	outp(0x3c4,0x4); outp(0x3c5,0x6);
 	outp(0x3d4,0x14); outp(0x3d5,0x0);
 	outp(0x3d4,0x17); outp(0x3d5,0xe3);
