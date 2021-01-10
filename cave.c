@@ -28,76 +28,119 @@ unsigned char palookup[MAXPALOOKUPS<<8], palette[768];
 
 volatile char keystatus[256];
 
-long scale (long, long, long);
-#pragma aux scale =\
-	"imul ebx"\
-	"idiv ecx"\
-	parm [eax][ebx][ecx] modify [eax edx]
+long scale(long a, long b, long c)
+{
+	return (a * b) / c;
+}
 
-long mulscale (long, long, long);
-#pragma aux mulscale =\
-	"imul ebx"\
-	"shrd eax, edx, cl"\
-	parm [eax][ebx][ecx] modify [edx]
+long mulscale(long a, long b, long c)
+{
+	return (a * b) >> (c & 0xff);
+}
 
-long divscale (long, long, long);
-#pragma aux divscale =\
-	"cdq"\
-	"shld edx, eax, cl"\
-	"sal eax, cl"\
-	"idiv ebx"\
-	parm [eax][ebx][ecx] modify [edx]
+long divscale(long a, long b, long c)
+{
+	return (a << (c & 0xff)) / b;
+}
 
-long groudiv (long, long);
-#pragma aux groudiv =\
-	"shl eax, 12"\
-	"sub eax, posz"\
-	"shld edx, eax, 16"\
-	"sar ebx, 8"\
-	"idiv bx"\
-	parm [eax][ebx] modify [edx]
+long groudiv(long a, long b)
+{
+	return ((a << 12) - posz) / ((b >> 8) & 0xffff);
+}
 
-long drawtopslab (long, long, long);
-#pragma aux drawtopslab =\
-	"shr ecx, 1"\
-	"jnc skipdraw1a"\
-	"mov [edi], al"\
-	"add edi, 80"\
-	"skipdraw1a: shr ecx, 1"\
-	"jnc skipdraw2a"\
-	"mov [edi], al"\
-	"mov [edi+80], al"\
-	"add edi, 160"\
-	"skipdraw2a: jecxz skipdraw4a"\
-	"startdrawa: mov [edi], al"\
-	"mov [edi+80], al"\
-	"mov [edi+160], al"\
-	"mov [edi+240], al"\
-	"add edi, 320"\
-	"loop startdrawa"\
-	"skipdraw4a: mov eax, edi"\
-	parm [edi][ecx][eax] modify [edi ecx eax]
+long drawtopslab(long edi, long ecx, long eax)
+{
+	int al = eax & 0xFF;
+	int carry;
 
-long drawbotslab (long, long, long);
-#pragma aux drawbotslab =\
-	"shr ecx, 1"\
-	"jnc skipdraw1b"\
-	"mov [edi], al"\
-	"sub edi, 80"\
-	"skipdraw1b: shr ecx, 1"\
-	"jnc skipdraw2b"\
-	"mov [edi], al"\
-	"mov [edi-80], al"\
-	"sub edi, 160"\
-	"skipdraw2b: jecxz skipdraw4b"\
-	"startdrawb: mov [edi], al"\
-	"mov [edi-80], al"\
-	"mov [edi-160], al"\
-	"mov [edi-240], al"\
-	"sub edi, 320"\
-	"loop startdrawb"\
-	"skipdraw4b: mov eax, edi"\
-	parm [edi][ecx][eax] modify [edi ecx eax]
+	carry = ecx & 1;
+	ecx >>= 1;
+
+	if (carry == 0)
+		goto skipdraw1a;
+
+	scrbuf[edi] = al;
+
+	edi += 80;
+
+skipdraw1a:
+	carry = ecx & 1;
+	ecx >>= 1;
+
+	if (carry == 0)
+		goto skipdraw2a;
+
+	scrbuf[edi] = al;
+	scrbuf[edi + 80] = al;
+	edi += 160;
+
+skipdraw2a:
+	if (ecx == 0)
+		goto skipdraw4a;
+
+startdrawa:
+	scrbuf[edi] = al;
+	scrbuf[edi + 80] = al;
+	scrbuf[edi + 160] = al;
+	scrbuf[edi + 240] = al;
+	edi += 320;
+
+	ecx--;
+	if (ecx != 0)
+		goto startdrawa;
+
+skipdraw4a:
+	eax = edi;
+
+	return eax;
+}
+
+long drawbotslab(long edi, long ecx, long eax)
+{
+	int al = eax & 0xFF;
+	int carry;
+
+	carry = ecx & 1;
+	ecx >>= 1;
+
+	if (carry == 0)
+		goto skipdraw1b;
+
+	scrbuf[edi] = al;
+
+	edi -= 80;
+
+skipdraw1b:
+	carry = ecx & 1;
+	ecx >>= 1;
+
+	if (carry == 0)
+		goto skipdraw2b;
+
+	scrbuf[edi] = al;
+	scrbuf[edi - 80] = al;
+	edi -= 160;
+
+skipdraw2b:
+	if (ecx == 0)
+		goto skipdraw4b;
+
+startdrawb:
+	scrbuf[edi] = al;
+	scrbuf[edi - 80] = al;
+	scrbuf[edi - 160] = al;
+	scrbuf[edi - 240] = al;
+	edi -= 320;
+
+	ecx--;
+	if (ecx != 0)
+		goto startdrawb;
+
+skipdraw4b:
+	eax = edi;
+
+	return eax;
+}
 
 void main ()
 {
