@@ -16,7 +16,7 @@
 #define MAXPALOOKUPS 64
 
 long posx, posy, posz, horiz, xdim, ydim;
-long newposz, vel, svel, angvel, pageoffset;
+long newposz, vel, svel, angvel;
 short ang, pixs, vidmode, detmode;
 short moustat, mousx, mousy;
 
@@ -110,112 +110,6 @@ long drawbotslab (long, long, long);
 	"loop startdrawb"\
 	"skipdraw4b: mov eax, edi"\
 	parm [edi][ecx][eax] modify [edi ecx eax]
-
-void showscreen4pix320200 ();
-#pragma aux showscreen4pix320200 =\
-	"mov dx, 0x3c4"\
-	"mov ax, 0x0f02"\
-	"out dx, ax"\
-	"mov ecx, 4000"\
-	"mov esi, offset scrbuf"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	modify [eax ecx edx esi edi]
-
-void showscreen4pix320400 ();
-#pragma aux showscreen4pix320400 =\
-	"mov dx, 0x3c4"\
-	"mov ax, 0x0f02"\
-	"out dx, ax"\
-	"mov ecx, 8000"\
-	"mov esi, offset scrbuf"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	modify [eax ecx edx esi edi]
-
-void showscreen2pix320200 ();
-#pragma aux showscreen2pix320200 =\
-	"mov dx, 0x3c4"\
-	"mov ax, 0x0302"\
-	"out dx, ax"\
-	"mov ecx, 4000"\
-	"mov esi, offset scrbuf"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	"mov ax, 0x0c02"\
-	"out dx, ax"\
-	"mov ecx, 4000"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	modify [eax ecx edx esi edi]
-
-void showscreen2pix320400 ();
-#pragma aux showscreen2pix320400 =\
-	"mov dx, 0x3c4"\
-	"mov ax, 0x0302"\
-	"out dx, ax"\
-	"mov ecx, 8000"\
-	"mov esi, offset scrbuf"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	"mov ax, 0x0c02"\
-	"out dx, ax"\
-	"mov ecx, 8000"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	modify [eax ecx edx esi edi]
-
-void showscreen1pix320200 ();
-#pragma aux showscreen1pix320200 =\
-	"mov dx, 0x3c4"\
-	"mov ax, 0x0102"\
-	"out dx, ax"\
-	"mov ecx, 4000"\
-	"mov esi, offset scrbuf"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	"mov ax, 0x0202"\
-	"out dx, ax"\
-	"mov ecx, 4000"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	"mov ax, 0x0402"\
-	"out dx, ax"\
-	"mov ecx, 4000"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	"mov ax, 0x0802"\
-	"out dx, ax"\
-	"mov ecx, 4000"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	modify [eax ecx edx esi edi]
-
-void showscreen1pix320400 ();
-#pragma aux showscreen1pix320400 =\
-	"mov dx, 0x3c4"\
-	"mov ax, 0x0102"\
-	"out dx, ax"\
-	"mov ecx, 8000"\
-	"mov esi, offset scrbuf"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	"mov ax, 0x0202"\
-	"out dx, ax"\
-	"mov ecx, 8000"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	"mov ax, 0x0402"\
-	"out dx, ax"\
-	"mov ecx, 8000"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	"mov ax, 0x0802"\
-	"out dx, ax"\
-	"mov ecx, 8000"\
-	"mov edi, pageoffset"\
-	"rep movsd"\
-	modify [eax ecx edx esi edi]
 
 void setupmouse ();
 #pragma aux setupmouse =\
@@ -311,7 +205,6 @@ void main ()
 	vidmode = 0;
 	xdim = 320;
 	ydim = 200;
-	pageoffset = 0xa0000;
 	blastcol = 0;
 	detmode = 0;
 
@@ -367,18 +260,6 @@ void main ()
 										(((long)palette[i+1])<<10)+
 										(((long)palette[i+2])<< 2));
 				}
-		}
-
-		outp(0x3d4,0xc); outp(0x3d5,(pageoffset&65535)>>8);  //Nextpage
-		if (vidmode == 0)
-		{
-			pageoffset += 16384;
-			if (pageoffset >= 0xb0000) pageoffset = 0xa0000;
-		}
-		else
-		{
-			pageoffset += 32768;
-			if (pageoffset > 0xa8000) pageoffset = 0xa0000;
 		}
 
 		if (keystatus[0x33] > 0)   // ,< Change blasting color
@@ -469,7 +350,6 @@ void main ()
 			{
 				if (vidmode == 0)
 				{
-					pageoffset = 0xa0000;
 					vidmode = 1;
 					outp(0x3d4,0x9); outp(0x3d5,inp(0x3d5)&254);
 					keystatus[0x1f] = 0;
