@@ -17,7 +17,7 @@
 
 long posx, posy, posz, horiz, xdim, ydim;
 long newposz, vel, svel, angvel;
-short ang, pixs, vidmode, detmode;
+short ang, vidmode;
 
 char h1[65536], c1[65536];
 char h2[65536], c2[65536];
@@ -105,12 +105,10 @@ void main ()
 	char blastcol;
 	long i, j, templong;
 
-	pixs = 2;
 	vidmode = 0;
 	xdim = 320;
 	ydim = 200;
 	blastcol = 0;
-	detmode = 0;
 
 	loadpalette();
 	loadtables();
@@ -131,21 +129,8 @@ void main ()
 
 	while (keystatus[1] == 0)
 	{
-		for(i=0;i<xdim;i+=pixs)
+		for(i=0;i<xdim;i++)
 			grouvline((short)i,128L);                 //Draw to non-video memory
-
-		if (vidmode == 0)                            //Copy to screen
-		{
-			if (pixs == 4) showscreen4pix320200();
-			if (pixs == 2) showscreen2pix320200();
-			if (pixs == 1) showscreen1pix320200();
-		}
-		else
-		{
-			if (pixs == 4) showscreen4pix320400();
-			if (pixs == 2) showscreen2pix320400();
-			if (pixs == 1) showscreen1pix320400();
-		}
 
 		if (keystatus[0x33] > 0)   // ,< Change blasting color
 		{
@@ -213,17 +198,6 @@ void main ()
 			posy &= 0x3ffffff;
 		}
 
-		if (detmode == 0)
-		{
-			if ((vel|svel|angvel) == 0)
-				pixs = 1;
-			else
-				pixs = 2;
-		}
-		if (keystatus[0x10] > 0) keystatus[0x10] = 0, pixs = 1;
-		if (keystatus[0x11] > 0) keystatus[0x11] = 0, pixs = 2;
-		if (keystatus[0x12] > 0) keystatus[0x12] = 0, pixs = 4;
-		if (keystatus[0x13] > 0) keystatus[0x13] = 0, detmode = 1-detmode;
 		if ((keystatus[0x1f]|keystatus[0x20]) > 0)
 		{
 			if (keystatus[0x1f] > 0)
@@ -386,43 +360,23 @@ void grouvline (short x, long scandist)
 	if (startumost[x] > startdmost[x])
 		return;
 
-	switch(pixs)
+	plc1 = startumost[x]*80+(x>>2);
+	plc2 = startdmost[x]*80+(x>>2);
+	if ((x&2) > 0)
 	{
-		case 1:
-			plc1 = startumost[x]*80+(x>>2)+FP_OFF(scrbuf);
-			plc2 = startdmost[x]*80+(x>>2)+FP_OFF(scrbuf);
-			if ((x&2) > 0)
-			{
-				plc1 += 32000*(vidmode+1);
-				plc2 += 32000*(vidmode+1);
-			}
-			if ((x&1) > 0)
-			{
-				plc1 += 16000*(vidmode+1);
-				plc2 += 16000*(vidmode+1);
-			}
-			break;
-		case 2:
-			plc1 = startumost[x]*80+(x>>2)+FP_OFF(scrbuf);
-			plc2 = startdmost[x]*80+(x>>2)+FP_OFF(scrbuf);
-			if ((x&2) > 0)
-			{
-				plc1 += 16000*(vidmode+1);
-				plc2 += 16000*(vidmode+1);
-			}
-			break;
-		case 4:
-			plc1 = startumost[x]*80+(x>>2)+FP_OFF(scrbuf);
-			plc2 = startdmost[x]*80+(x>>2)+FP_OFF(scrbuf);
-			break;
+		plc1 += 32000*(vidmode+1);
+		plc2 += 32000*(vidmode+1);
+	}
+	if ((x&1) > 0)
+	{
+		plc1 += 16000*(vidmode+1);
+		plc2 += 16000*(vidmode+1);
 	}
 
 	cosval = sintable[(ang+2560)&2047];
 	sinval = sintable[(ang+2048)&2047];
 
-	if (pixs == 1) dax = (x<<1)-xdim;
-	if (pixs == 2) dax = (x<<1)+1-xdim;
-	if (pixs == 4) dax = (x<<1)+3-xdim;
+	dax = (x<<1)-xdim;
 
 	incr[0] = cosval - scale(sinval,dax,xdim);
 	incr[1] = sinval + scale(cosval,dax,xdim);
