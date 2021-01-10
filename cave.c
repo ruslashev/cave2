@@ -112,7 +112,7 @@ void main ()
 	blastcol = 0;
 	detmode = 0;
 
-	setscreenmode();
+	loadpalette();
 	loadtables();
 	loadboard();
 
@@ -284,38 +284,27 @@ void loadboard ()
 		}
 }
 
-void setscreenmode ()
+void loadpalette ()
 {
 	long i, fil;
 
-	outp(0x3c4,0x4); outp(0x3c5,0x6);
-	outp(0x3d4,0x14); outp(0x3d5,0x0);
-	outp(0x3d4,0x17); outp(0x3d5,0xe3);
-	if (ydim == 400)
-	{
-		outp(0x3d4,0x9); outp(0x3d5,inp(0x3d5)&254);
-	}
-
-	if ((fil = open("palette.dat",O_BINARY|O_RDWR,S_IREAD)) == -1)
+	if ((fil = open("palette.dat",O_RDONLY)) == -1)
 	{
 		printf("Can't load palette.dat.  Now why could that be?\n");
 		exit(0);
 	}
+
 	read(fil,&palette[0],768);
 	read(fil,&numpalookups,2);
 	read(fil,&palookup[0],numpalookups<<8);
 	close(fil);
-
-	outp(0x3c8,0);
-	for(i=0;i<768;i++)
-		outp(0x3c9,palette[i]);
 }
 
 void loadtables ()
 {
 	short fil;
 
-	if ((fil = open("tables.dat",O_BINARY|O_RDWR,S_IREAD)) != -1)
+	if ((fil = open("tables.dat",O_RDONLY)) != -1)
 	{
 		read(fil,&sintable[0],4096);
 		close(fil);
