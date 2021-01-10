@@ -1,11 +1,11 @@
-#include <conio.h>
+#include "gfx.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <dos.h>
 #include <fcntl.h>
-#include <io.h>
-#include <sys\types.h>
-#include <sys\stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string.h>
 
 //04/29/2005: Fixed warnings in OpenWatcom 1.3. Fixed move&look up/down speed.
 //10/08/2002: Added screen capture to X.PNG using F12.
