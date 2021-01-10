@@ -142,6 +142,10 @@ skipdraw4b:
 	return eax;
 }
 
+void keydown(char key, int down)
+{
+}
+
 void main ()
 {
 	char blastcol;
@@ -151,6 +155,8 @@ void main ()
 	xdim = 320;
 	ydim = 200;
 	blastcol = 0;
+
+	gfx_init(xdim, ydim);
 
 	loadpalette();
 	loadtables();
@@ -164,7 +170,7 @@ void main ()
 
 	blast(((posx>>10)&255),((posy>>10)&255),8L,blastcol);
 
-	while (keystatus[1] == 0)
+	while (gfx_update(keydown))
 	{
 		for(i=0;i<xdim;i++)
 			grouvline((short)i,128L);                 //Draw to non-video memory
@@ -242,7 +248,6 @@ void main ()
 				if (vidmode == 0)
 				{
 					vidmode = 1;
-					outp(0x3d4,0x9); outp(0x3d5,inp(0x3d5)&254);
 					keystatus[0x1f] = 0;
 					ydim = 400L;
 					horiz <<= 1;
@@ -253,7 +258,6 @@ void main ()
 				if (vidmode == 1)
 				{
 					vidmode = 0;
-					outp(0x3d4,0x9); outp(0x3d5,inp(0x3d5)|1);
 					keystatus[0x20] = 0;
 					ydim = 200L;
 					horiz >>= 1;
@@ -265,7 +269,22 @@ void main ()
 				startdmost[i] = ydim-1;
 			}
 		}
+
+		j = (vidmode + 1) * (320 >> 2) * 200;
+		for (int y = 0; y < (vidmode + 1) * 200; ++y)
+			for (int x = 0; x < xdim; ++x) {
+				int palette_idx = scrbuf[(320 >> 2) * y + (x >> 2) + j * (x & 3)];
+				uint8_t r = palette[palette_idx * 3 + 0] * 4,
+				        g = palette[palette_idx * 3 + 1] * 4,
+				        b = palette[palette_idx * 3 + 2] * 4;
+				uint32_t color = r << 16 | g << 8 | b;
+				gfx_set_pixel(x, y, color);
+			}
+
+		gfx_draw();
 	}
+
+	gfx_destroy();
 }
 
 void loadboard ()
