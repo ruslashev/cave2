@@ -27,7 +27,6 @@ short numpalookups;
 unsigned char palookup[MAXPALOOKUPS<<8], palette[768];
 
 volatile char keystatus[256];
-volatile long clockspeed, totalclock, numframes;
 
 long scale (long, long, long);
 #pragma aux scale =\
@@ -103,7 +102,7 @@ long drawbotslab (long, long, long);
 void main ()
 {
 	char blastcol;
-	long i, j, templong;
+	long i, j;
 
 	vidmode = 0;
 	xdim = 320;
@@ -113,11 +112,6 @@ void main ()
 	loadpalette();
 	loadtables();
 	loadboard();
-
-	clockspeed = 0L;
-	totalclock = 0L;
-	numframes = 0L;
-	outp(0x43,54); outp(0x40,4972&255); outp(0x40,4972>>8);
 
 	for(i=0;i<xdim;i++)
 	{
@@ -154,16 +148,16 @@ void main ()
 		svel = 0L;
 		angvel = 0;
 
-		if (keystatus[0x4e] > 0) horiz += clockspeed;
-		if (keystatus[0x4a] > 0) horiz -= clockspeed;
+		if (keystatus[0x4e] > 0) horiz++;
+		if (keystatus[0x4a] > 0) horiz--;
 		if (keystatus[0x1e] > 0)
 		{
-			posz -= (clockspeed<<(keystatus[0x2a]+8));
+			posz -= (1<<(keystatus[0x2a]+8));
 			if (posz < 2048) posz = 2048;
 		}
 		if (keystatus[0x2c] > 0)
 		{
-			posz += (clockspeed<<(keystatus[0x2a]+8));
+			posz += (1<<(keystatus[0x2a]+8));
 			if (posz >= 1048576-4096-2048) posz = 1048575-4096-2048;
 		}
 		if (keystatus[0x9d] == 0)
@@ -185,15 +179,15 @@ void main ()
 		}
 		if (angvel != 0)
 		{
-			ang += ((angvel*((short int)clockspeed))>>3);
+			ang += angvel>>3;
 			ang = (ang+2048)&2047;
 		}
 		if ((vel != 0L) || (svel != 0L))
 		{
-			posx += ((vel*clockspeed*sintable[(2560+ang)&2047])>>12);
-			posy += ((vel*clockspeed*sintable[(2048+ang)&2047])>>12);
-			posx += ((svel*clockspeed*sintable[(2048+ang)&2047])>>12);
-			posy -= ((svel*clockspeed*sintable[(2560+ang)&2047])>>12);
+			posx += ((vel*sintable[(2560+ang)&2047])>>12);
+			posy += ((vel*sintable[(2048+ang)&2047])>>12);
+			posx += ((svel*sintable[(2048+ang)&2047])>>12);
+			posy -= ((svel*sintable[(2560+ang)&2047])>>12);
 			posx &= 0x3ffffff;
 			posy &= 0x3ffffff;
 		}
@@ -228,17 +222,6 @@ void main ()
 				startdmost[i] = ydim-1;
 			}
 		}
-
-		numframes++;
-		totalclock += clockspeed;
-		clockspeed = 0L;
-	}
-	outp(0x43,54); outp(0x40,255); outp(0x40,255);
-
-	if (totalclock != 0)
-	{
-		templong = (numframes*24000L)/totalclock;
-		printf("%d.%1d%1d frames per second\n",(short int)(templong/100),(short int)((templong/10)%10),(short int)(templong%10));
 	}
 }
 
