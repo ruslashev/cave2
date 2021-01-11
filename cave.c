@@ -179,6 +179,11 @@ int main ()
 		for(i=0;i<xdim;i++)
 			grouvline((short)i,128L);                 //Draw to non-video memory
 
+		if (keystatus[GFX_ESC])
+		{
+			break;
+		}
+
 		if (keystatus[','] > 0)   // ,< Change blasting color
 		{
 			keystatus[','] = 0;

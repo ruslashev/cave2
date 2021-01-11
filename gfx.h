@@ -20,6 +20,7 @@ enum {
 	GFX_DOWN,
 	GFX_LEFT,
 	GFX_RIGHT,
+	GFX_ESC,
 };
 
 void gfx_init(unsigned int _window_width, unsigned int _window_height);

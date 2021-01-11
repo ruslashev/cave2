@@ -59,6 +59,7 @@ static char sdlkey_to_char(SDL_Keycode kc)
 	case SDLK_DOWN:   return GFX_DOWN;
 	case SDLK_LEFT:   return GFX_LEFT;
 	case SDLK_RIGHT:  return GFX_RIGHT;
+	case SDLK_ESCAPE: return GFX_ESC;
 	case SDLK_MINUS:  return '-';
 	case SDLK_EQUALS: return '=';
 	default:          return -1;
