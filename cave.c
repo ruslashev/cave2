@@ -19,10 +19,10 @@ long posx, posy, posz, horiz, xdim, ydim;
 long newposz, vel, svel, angvel;
 short ang, vidmode;
 
-char h1[65536], c1[65536];
-char h2[65536], c2[65536];
+unsigned char h1[65536], c1[65536];
+unsigned char h2[65536], c2[65536];
 short sintable[2048], startumost[320], startdmost[320];
-char scrbuf[128000];
+unsigned char scrbuf[128000];
 short numpalookups;
 unsigned char palookup[MAXPALOOKUPS<<8], palette[768];
 
@@ -148,7 +148,7 @@ void keydown(char key, int down)
 
 void main ()
 {
-	char blastcol;
+	unsigned char blastcol;
 	long i, j;
 
 	vidmode = 0;
@@ -344,7 +344,7 @@ long ksqrt (long num)
 	return(root);
 }
 
-void blast (long gridx, long gridy, long rad, char blastingcol)
+void blast (long gridx, long gridy, long rad, unsigned char blastingcol)
 {
 	short tempshort;
 	long i, j, dax, day, daz, dasqr, templong;
@@ -381,14 +381,14 @@ void blast (long gridx, long gridy, long rad, char blastingcol)
 			tempshort = labs(64-(tempshort&127))+(rand()&3)-2;
 			if (tempshort < 0) tempshort = 0;
 			if (tempshort > 63) tempshort = 63;
-			c1[(dax<<8)+day] = (char)(tempshort+blastingcol);
+			c1[(dax<<8)+day] = (unsigned char)(tempshort+blastingcol);
 
 			tempshort = h2[(dax<<8)+day];
 			if (tempshort <= h1[(dax<<8)+day]) tempshort = (posz>>12);
 			tempshort = labs(64-(tempshort&127))+(rand()&3)-2;
 			if (tempshort < 0) tempshort = 0;
 			if (tempshort > 63) tempshort = 63;
-			c2[(dax<<8)+day] = (char)(tempshort+blastingcol);
+			c2[(dax<<8)+day] = (unsigned char)(tempshort+blastingcol);
 		}
 }
 
@@ -397,7 +397,7 @@ void grouvline (short x, long scandist)
 	long dist[2], dinc[2], incr[2];
 	short grid[2], dir[2];
 
-	char oh1, oh2;
+	unsigned char oh1, oh2;
 	short um, dm, h, i;
 	long plc1, plc2, cosval, sinval;
 	long snx, sny, dax, c, shade, cnt, bufplc;
