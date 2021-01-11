@@ -15,16 +15,27 @@
 
 #define MAXPALOOKUPS 64
 
+#define SINTABLE_HALF_PI 512
+#define SINTABLE_ENTRIES (SINTABLE_HALF_PI * 4)
+
 long posx, posy, posz, horiz, xdim, ydim;
 long newposz, vel, svel, angvel;
 short ang, vidmode;
 
 unsigned char h1[65536], c1[65536];
 unsigned char h2[65536], c2[65536];
-short sintable[2048];
+int16_t sintable[SINTABLE_ENTRIES];
 unsigned char scrbuf[128000];
 short numpalookups;
 unsigned char palookup[MAXPALOOKUPS<<8], palette[768];
+
+// Operation commonly used in this file: akin to modulo operator, but for powers of 2.
+#define MOD_PO2(X, P) (((X) + (P)) & ((P) - 1))
+
+// Assumes angles in range of 0 to 2048. Values are -2^14 to 2^14.
+#define sin(X) sintable[MOD_PO2(X, SINTABLE_ENTRIES)]
+// Equals to SINTABLE_HALF_PI - X, (like in the trig identity) except for some off-by-1 numbers
+#define cos(X) sintable[MOD_PO2((X) + SINTABLE_HALF_PI, SINTABLE_ENTRIES)]
 
 volatile char keystatus[256];
 
@@ -242,10 +253,10 @@ int main ()
 		}
 		if ((vel != 0L) || (svel != 0L))
 		{
-			posx += ((vel*sintable[(2560+ang)&2047])>>12);
-			posy += ((vel*sintable[(2048+ang)&2047])>>12);
-			posx += ((svel*sintable[(2048+ang)&2047])>>12);
-			posy -= ((svel*sintable[(2560+ang)&2047])>>12);
+			posx += ((vel*cos(ang))>>12);
+			posy += ((vel*sin(ang))>>12);
+			posx += ((svel*sin(ang))>>12);
+			posy -= ((svel*cos(ang))>>12);
 			posx &= 0x3ffffff;
 			posy &= 0x3ffffff;
 		}
@@ -331,7 +342,7 @@ void loadtables ()
 
 	if ((fil = open("tables.dat",O_RDONLY)) != -1)
 	{
-		read(fil,&sintable[0],4096);
+		read(fil,sintable,sizeof(sintable));
 		close(fil);
 	}
 }
@@ -421,8 +432,8 @@ void grouvline (short x, long scandist)
 		plc2 += 16000*(vidmode+1);
 	}
 
-	cosval = sintable[(ang+2560)&2047];
-	sinval = sintable[(ang+2048)&2047];
+	cosval = cos(ang);
+	sinval = sin(ang);
 
 	dax = (x<<1)-xdim;
 
