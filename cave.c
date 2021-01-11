@@ -32,7 +32,7 @@ short numpalookups;
 unsigned char palookup[MAXPALOOKUPS<<8], palette[768];
 
 // Operation commonly used in this file: akin to modulo operator, but for powers of 2.
-#define MOD_PO2(X, P) (((X) + (P)) & ((P) - 1))
+#define MOD_PO2(X, P) ((X) & ((P) - 1))
 
 // Assumes angles in range of 0 to 2048. Values are -2^14 to 2^14.
 #define sin(X) sintable[MOD_PO2(X, SINTABLE_ENTRIES)]
@@ -253,7 +253,7 @@ int main ()
 		if (angvel != 0)
 		{
 			ang += angvel>>3;
-			ang = (ang+2048)&2047;
+			ang = MOD_PO2(ang, SINTABLE_ENTRIES);
 		}
 		if ((vel != 0L) || (svel != 0L))
 		{
@@ -374,8 +374,8 @@ void blast (long gridx, long gridy, long rad, unsigned char blastingcol)
 	for(i=-templong;i<=templong;i++)
 		for(j=-templong;j<=templong;j++)
 		{
-			dax = ((gridx+i+256)&255);
-			day = ((gridy+j+256)&255);
+			dax = MOD_PO2(gridx + i, WORLD_DIM);
+			day = MOD_PO2(gridy + j, WORLD_DIM);
 			dasqr = rad*rad-(i*i+j*j);
 
 			if (dasqr >= 0)
@@ -505,7 +505,7 @@ void grouvline (short x, long scandist)
 			dm = h-1;
 		}
 
-		grid[i] = ((grid[i]+dir[i])&255);
+		grid[i] = MOD_PO2(grid[i] + dir[i], WORLD_DIM);
 		bufplc = (grid[0]<<8)+grid[1];
 
 		if (h1[bufplc] > oh1)
