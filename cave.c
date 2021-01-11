@@ -21,7 +21,7 @@ short ang, vidmode;
 
 unsigned char h1[65536], c1[65536];
 unsigned char h2[65536], c2[65536];
-short sintable[2048], startumost[320], startdmost[320];
+short sintable[2048];
 unsigned char scrbuf[128000];
 short numpalookups;
 unsigned char palookup[MAXPALOOKUPS<<8], palette[768];
@@ -172,12 +172,6 @@ int main ()
 	loadtables();
 	loadboard();
 
-	for(i=0;i<xdim;i++)
-	{
-		startumost[i] = 0;
-		startdmost[i] = ydim-1;
-	}
-
 	blast(((posx>>10)&255),((posy>>10)&255),8L,blastcol);
 
 	while (gfx_update(keydown))
@@ -272,11 +266,6 @@ int main ()
 					ydim = 200L;
 					horiz >>= 1;
 				}
-			}
-			for(i=0;i<xdim;i++)
-			{
-				startumost[i] = 0;
-				startdmost[i] = ydim-1;
 			}
 		}
 
@@ -414,11 +403,8 @@ void grouvline (short x, long scandist)
 	long plc1, plc2, cosval, sinval;
 	long snx, sny, dax, c, shade, cnt, bufplc;
 
-	if (startumost[x] > startdmost[x])
-		return;
-
-	plc1 = startumost[x]*80+(x>>2);
-	plc2 = startdmost[x]*80+(x>>2);
+	plc1 = (0     )*80+(x>>2);
+	plc2 = (ydim-1)*80+(x>>2);
 	if ((x&2) > 0)
 	{
 		plc1 += 32000*(vidmode+1);
@@ -456,8 +442,8 @@ void grouvline (short x, long scandist)
 		dist[1] = mulscale(dinc[1],sny,10);
 	}
 
-	um = startumost[x]-horiz;
-	dm = startdmost[x]-horiz;
+	um = (0     )-horiz;
+	dm = (ydim-1)-horiz;
 
 	i = incr[0]; incr[0] = incr[1]; incr[1] = -i;
 
