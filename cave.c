@@ -39,7 +39,8 @@ unsigned char palookup[MAXPALOOKUPS<<8], palette[768];
 // Equals to SINTABLE_HALF_PI - X, (like in the trig identity) except for some off-by-1 numbers
 #define cos(X) sintable[MOD_PO2((X) + SINTABLE_HALF_PI, SINTABLE_ENTRIES)]
 
-#define POS_TO_GRID(X) (((X) >> 10) & (WORLD_DIM - 1))
+#define POS_TO_GRID(A)      (((A) >> 10) & (WORLD_DIM - 1))
+#define WORLD_ADDRESS(X, Y) ((Y) * WORLD_DIM + (X))
 
 volatile char keystatus[256];
 
@@ -368,7 +369,7 @@ long ksqrt (long num)
 void blast (long gridx, long gridy, long rad, unsigned char blastingcol)
 {
 	short tempshort;
-	long i, j, dax, day, daz, dasqr, templong;
+	long i, j, dax, day, daz, dasqr, templong, widx;
 
 	templong = rad+2;
 	for(i=-templong;i<=templong;i++)
@@ -376,6 +377,7 @@ void blast (long gridx, long gridy, long rad, unsigned char blastingcol)
 		{
 			dax = MOD_PO2(gridx + i, WORLD_DIM);
 			day = MOD_PO2(gridy + j, WORLD_DIM);
+			widx = WORLD_ADDRESS(dax, day);
 			dasqr = rad*rad-(i*i+j*j);
 
 			if (dasqr >= 0)
@@ -383,33 +385,33 @@ void blast (long gridx, long gridy, long rad, unsigned char blastingcol)
 			else
 				daz = -(ksqrt(-dasqr)<<1);
 
-			if ((posz>>12)-daz < h1[(dax<<8)+day])
+			if ((posz>>12)-daz < h1[widx])
 			{
-				h1[(dax<<8)+day] = (posz>>12)-daz;
+				h1[widx] = (posz>>12)-daz;
 				if (((posz>>12)-daz) < 0)
-					h1[(dax<<8)+day] = 0;
+					h1[widx] = 0;
 			}
 
-			if ((posz>>12)+daz > h2[(dax<<8)+day])
+			if ((posz>>12)+daz > h2[widx])
 			{
-				h2[(dax<<8)+day] = (posz>>12)+daz;
+				h2[widx] = (posz>>12)+daz;
 				if (((posz>>12)+daz) > 255)
-					h2[(dax<<8)+day] = 255;
+					h2[widx] = 255;
 			}
 
-			tempshort = h1[(dax<<8)+day];
-			if (tempshort >= h2[(dax<<8)+day]) tempshort = (posz>>12);
+			tempshort = h1[widx];
+			if (tempshort >= h2[widx]) tempshort = (posz>>12);
 			tempshort = labs(64-(tempshort&127))+(rand()&3)-2;
 			if (tempshort < 0) tempshort = 0;
 			if (tempshort > 63) tempshort = 63;
-			c1[(dax<<8)+day] = (unsigned char)(tempshort+blastingcol);
+			c1[widx] = (unsigned char)(tempshort+blastingcol);
 
-			tempshort = h2[(dax<<8)+day];
-			if (tempshort <= h1[(dax<<8)+day]) tempshort = (posz>>12);
+			tempshort = h2[widx];
+			if (tempshort <= h1[widx]) tempshort = (posz>>12);
 			tempshort = labs(64-(tempshort&127))+(rand()&3)-2;
 			if (tempshort < 0) tempshort = 0;
 			if (tempshort > 63) tempshort = 63;
-			c2[(dax<<8)+day] = (unsigned char)(tempshort+blastingcol);
+			c2[widx] = (unsigned char)(tempshort+blastingcol);
 		}
 }
 
@@ -479,7 +481,7 @@ void grouvline (short x, long scandist)
 		shade++;
 	}
 
-	bufplc = (grid[0]<<8)+grid[1];
+	bufplc = WORLD_ADDRESS(grid[0], grid[1]);
 
 	while (shade < scandist-9)
 	{
@@ -506,7 +508,7 @@ void grouvline (short x, long scandist)
 		}
 
 		grid[i] = MOD_PO2(grid[i] + dir[i], WORLD_DIM);
-		bufplc = (grid[0]<<8)+grid[1];
+		bufplc = WORLD_ADDRESS(grid[0], grid[1]);
 
 		if (h1[bufplc] > oh1)
 		{
