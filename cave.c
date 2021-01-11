@@ -150,7 +150,13 @@ void keydown(char key, int down)
 	keystatus[(unsigned char)key] = down;
 }
 
-void main ()
+void grouvline (short x, long scandist);
+void blast (long gridx, long gridy, long rad, unsigned char blastingcol);
+void loadtables ();
+void loadpalette ();
+void loadboard ();
+
+int main ()
 {
 	unsigned char blastcol;
 	long i, j;
@@ -289,6 +295,8 @@ void main ()
 	}
 
 	gfx_destroy();
+
+	return 0;
 }
 
 void loadboard ()
