@@ -18,12 +18,14 @@
 #define SINTABLE_HALF_PI 512
 #define SINTABLE_ENTRIES (SINTABLE_HALF_PI * 4)
 
+#define WORLD_DIM 256
+
 long posx, posy, posz, horiz, xdim, ydim;
 long newposz, vel, svel, angvel;
 short ang, vidmode;
 
-unsigned char h1[65536], c1[65536];
-unsigned char h2[65536], c2[65536];
+unsigned char h1[WORLD_DIM * WORLD_DIM], c1[WORLD_DIM * WORLD_DIM];
+unsigned char h2[WORLD_DIM * WORLD_DIM], c2[WORLD_DIM * WORLD_DIM];
 int16_t sintable[SINTABLE_ENTRIES];
 unsigned char scrbuf[128000];
 short numpalookups;
@@ -36,6 +38,8 @@ unsigned char palookup[MAXPALOOKUPS<<8], palette[768];
 #define sin(X) sintable[MOD_PO2(X, SINTABLE_ENTRIES)]
 // Equals to SINTABLE_HALF_PI - X, (like in the trig identity) except for some off-by-1 numbers
 #define cos(X) sintable[MOD_PO2((X) + SINTABLE_HALF_PI, SINTABLE_ENTRIES)]
+
+#define POS_TO_GRID(X) (((X) >> 10) & (WORLD_DIM - 1))
 
 volatile char keystatus[256];
 
@@ -183,7 +187,7 @@ int main ()
 	loadtables();
 	loadboard();
 
-	blast(((posx>>10)&255),((posy>>10)&255),8L,blastcol);
+	blast(POS_TO_GRID(posx), POS_TO_GRID(posy), 8L, blastcol);
 
 	while (gfx_update(keydown))
 	{
@@ -208,9 +212,9 @@ int main ()
 		if (keystatus[' '] > 0)
 		{
 			if (keystatus[GFX_CTRL] > 0)
-				blast(((posx>>10)&255),((posy>>10)&255),16L,blastcol);
+				blast(POS_TO_GRID(posx),POS_TO_GRID(posy),16L,blastcol);
 			else
-				blast(((posx>>10)&255),((posy>>10)&255),8L,blastcol);
+				blast(POS_TO_GRID(posx),POS_TO_GRID(posy),8L,blastcol);
 		}
 
 		vel = 0L;
@@ -310,13 +314,13 @@ void loadboard ()
 
 	posx = 512; posy = 512; posz = ((128-32)<<12); ang = 0;
 	horiz = (ydim>>1);
-	for(i=0;i<256;i++)
-		for(j=0;j<256;j++)
+	for(i=0;i<WORLD_DIM;i++)
+		for(j=0;j<WORLD_DIM;j++)
 		{
-			h1[(i<<8)+j] = 255;
-			c1[(i<<8)+j] = 128;
-			h2[(i<<8)+j] = 0;
-			c2[(i<<8)+j] = 128;
+			h1[i * WORLD_DIM + j] = 255;
+			c1[i * WORLD_DIM + j] = 128;
+			h2[i * WORLD_DIM + j] = 0;
+			c2[i * WORLD_DIM + j] = 128;
 		}
 }
 
@@ -445,7 +449,8 @@ void grouvline (short x, long scandist)
 	snx = (posx&1023); if (dir[0] == 1) snx ^= 1023;
 	sny = (posy&1023); if (dir[1] == 1) sny ^= 1023;
 	cnt = ((snx*incr[1] - sny*incr[0])>>10);
-	grid[0] = ((posx>>10)&255); grid[1] = ((posy>>10)&255);
+	grid[0] = POS_TO_GRID(posx);
+	grid[1] = POS_TO_GRID(posy);
 
 	if (incr[0] != 0)
 	{
