@@ -231,12 +231,12 @@ int main ()
 		}
 		if ((vel != 0L) || (svel != 0L))
 		{
-			posx += ((vel*cos(ang))>>12);
-			posy += ((vel*sin(ang))>>12);
-			posx += ((svel*sin(ang))>>12);
-			posy -= ((svel*cos(ang))>>12);
-			posx &= 0x3ffffff;
-			posy &= 0x3ffffff;
+			posx += ( vel*cos(ang))>>12;
+			posy += ( vel*sin(ang))>>12;
+			posx += (svel*sin(ang))>>12;
+			posy -= (svel*cos(ang))>>12;
+			posx &= (1<<18)-1;
+			posy &= (1<<18)-1;
 		}
 
 		j = (vidmode + 1) * (320 >> 2) * 200;
