@@ -67,9 +67,8 @@ long groudiv(long a, long b)
 	return ((a << 12) - posz) / ((b >> 8) & 0xffff);
 }
 
-long drawtopslab(long edi, long ecx, long eax)
+long drawtopslab(long edi, long ecx, unsigned char color)
 {
-	int al = eax & 0xFF;
 	int carry;
 
 	carry = ecx & 1;
@@ -78,7 +77,7 @@ long drawtopslab(long edi, long ecx, long eax)
 	if (carry == 0)
 		goto skipdraw1a;
 
-	scrbuf[edi] = al;
+	scrbuf[edi] = color;
 
 	edi += 80;
 
@@ -89,8 +88,8 @@ skipdraw1a:
 	if (carry == 0)
 		goto skipdraw2a;
 
-	scrbuf[edi] = al;
-	scrbuf[edi + 80] = al;
+	scrbuf[edi] = color;
+	scrbuf[edi + 80] = color;
 	edi += 160;
 
 skipdraw2a:
@@ -98,10 +97,10 @@ skipdraw2a:
 		goto skipdraw4a;
 
 startdrawa:
-	scrbuf[edi] = al;
-	scrbuf[edi + 80] = al;
-	scrbuf[edi + 160] = al;
-	scrbuf[edi + 240] = al;
+	scrbuf[edi] = color;
+	scrbuf[edi + 80] = color;
+	scrbuf[edi + 160] = color;
+	scrbuf[edi + 240] = color;
 	edi += 320;
 
 	ecx--;
@@ -109,14 +108,11 @@ startdrawa:
 		goto startdrawa;
 
 skipdraw4a:
-	eax = edi;
-
-	return eax;
+	return edi;
 }
 
-long drawbotslab(long edi, long ecx, long eax)
+long drawbotslab(long edi, long ecx, unsigned char color)
 {
-	int al = eax & 0xFF;
 	int carry;
 
 	carry = ecx & 1;
@@ -125,7 +121,7 @@ long drawbotslab(long edi, long ecx, long eax)
 	if (carry == 0)
 		goto skipdraw1b;
 
-	scrbuf[edi] = al;
+	scrbuf[edi] = color;
 
 	edi -= 80;
 
@@ -136,8 +132,8 @@ skipdraw1b:
 	if (carry == 0)
 		goto skipdraw2b;
 
-	scrbuf[edi] = al;
-	scrbuf[edi - 80] = al;
+	scrbuf[edi] = color;
+	scrbuf[edi - 80] = color;
 	edi -= 160;
 
 skipdraw2b:
@@ -145,10 +141,10 @@ skipdraw2b:
 		goto skipdraw4b;
 
 startdrawb:
-	scrbuf[edi] = al;
-	scrbuf[edi - 80] = al;
-	scrbuf[edi - 160] = al;
-	scrbuf[edi - 240] = al;
+	scrbuf[edi] = color;
+	scrbuf[edi - 80] = color;
+	scrbuf[edi - 160] = color;
+	scrbuf[edi - 240] = color;
 	edi -= 320;
 
 	ecx--;
@@ -156,9 +152,7 @@ startdrawb:
 		goto startdrawb;
 
 skipdraw4b:
-	eax = edi;
-
-	return eax;
+	return edi;
 }
 
 void keydown(char key, int down)
