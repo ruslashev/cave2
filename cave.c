@@ -180,7 +180,7 @@ int main ()
 	unsigned char blastcol;
 	long i, j;
 
-	vidmode = 0;
+	vidmode = 0; /* 1 -> 320x400 */
 	xdim = 320;
 	ydim = 200;
 	blastcol = 0;
@@ -268,30 +268,6 @@ int main ()
 			posy -= ((svel*cos(ang))>>12);
 			posx &= 0x3ffffff;
 			posy &= 0x3ffffff;
-		}
-
-		if ((keystatus['s']|keystatus['d']) > 0)
-		{
-			if (keystatus['s'] > 0)
-			{
-				if (vidmode == 0)
-				{
-					vidmode = 1;
-					keystatus['s'] = 0;
-					ydim = 400L;
-					horiz <<= 1;
-				}
-			}
-			if (keystatus['d'] > 0)
-			{
-				if (vidmode == 1)
-				{
-					vidmode = 0;
-					keystatus['d'] = 0;
-					ydim = 200L;
-					horiz >>= 1;
-				}
-			}
 		}
 
 		j = (vidmode + 1) * (320 >> 2) * 200;
