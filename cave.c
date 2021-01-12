@@ -93,21 +93,16 @@ skipdraw1a:
 	edi += 160;
 
 skipdraw2a:
-	if (ecx == 0)
-		goto skipdraw4a;
+	while (ecx != 0) {
+		scrbuf[edi] = color;
+		scrbuf[edi + 80] = color;
+		scrbuf[edi + 160] = color;
+		scrbuf[edi + 240] = color;
+		edi += 320;
 
-startdrawa:
-	scrbuf[edi] = color;
-	scrbuf[edi + 80] = color;
-	scrbuf[edi + 160] = color;
-	scrbuf[edi + 240] = color;
-	edi += 320;
+		ecx--;
+	}
 
-	ecx--;
-	if (ecx != 0)
-		goto startdrawa;
-
-skipdraw4a:
 	return edi;
 }
 
@@ -137,21 +132,16 @@ skipdraw1b:
 	edi -= 160;
 
 skipdraw2b:
-	if (ecx == 0)
-		goto skipdraw4b;
+	while (ecx != 0) {
+		scrbuf[edi] = color;
+		scrbuf[edi - 80] = color;
+		scrbuf[edi - 160] = color;
+		scrbuf[edi - 240] = color;
+		edi -= 320;
 
-startdrawb:
-	scrbuf[edi] = color;
-	scrbuf[edi - 80] = color;
-	scrbuf[edi - 160] = color;
-	scrbuf[edi - 240] = color;
-	edi -= 320;
+		ecx--;
+	}
 
-	ecx--;
-	if (ecx != 0)
-		goto startdrawb;
-
-skipdraw4b:
 	return edi;
 }
 
