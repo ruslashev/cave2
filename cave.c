@@ -379,7 +379,7 @@ void blast (long gridx, long gridy, long rad, unsigned char blastingcol)
 		}
 }
 
-void grouvline (short x, long scandist)
+void grouvline (short scr_column, long scandist)
 {
 	long dist[2], dinc[2], incr[2];
 	short grid[2], dir[2];
@@ -389,14 +389,14 @@ void grouvline (short x, long scandist)
 	long plc1, plc2, cosval, sinval;
 	long snx, sny, dax, c, shade, cnt, bufplc;
 
-	plc1 = (0     )*80+(x>>2);
-	plc2 = (ydim-1)*80+(x>>2);
-	if ((x&2) > 0)
+	plc1 = (0     )*80+(scr_column>>2);
+	plc2 = (ydim-1)*80+(scr_column>>2);
+	if ((scr_column&2) > 0)
 	{
 		plc1 += 32000*(vidmode+1);
 		plc2 += 32000*(vidmode+1);
 	}
-	if ((x&1) > 0)
+	if ((scr_column&1) > 0)
 	{
 		plc1 += 16000*(vidmode+1);
 		plc2 += 16000*(vidmode+1);
@@ -405,7 +405,7 @@ void grouvline (short x, long scandist)
 	cosval = cos(ang);
 	sinval = sin(ang);
 
-	dax = (x<<1)-xdim;
+	dax = (scr_column<<1)-xdim;
 
 	incr[0] = cosval - scale(sinval,dax,xdim);
 	incr[1] = sinval + scale(cosval,dax,xdim);
