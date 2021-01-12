@@ -16,4 +16,4 @@ $(BIN): $(OBJ)
 	@$(CC) $^ -o $@ $(CFLAGS) -c
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(BIN)
