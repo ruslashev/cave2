@@ -13,12 +13,14 @@
 //      CAVE.C 11/17/1994 03:22 AM 15,722
 //   Looks like I ported GROUCAVE.BAS->CAVE.C around 04/20/1994 to 04/21/1994
 
-#define MAXPALOOKUPS 64
-
 #define SINTABLE_HALF_PI 512
 #define SINTABLE_ENTRIES (SINTABLE_HALF_PI * 4)
 
 #define WORLD_DIM 256
+
+#define PAL_COLORS 4
+#define PAL_SHADES 64
+#define PAL_LUTSHADES 64
 
 long posx, posy, posz, horiz, xdim, ydim;
 long newposz, vel, svel, angvel;
@@ -29,7 +31,8 @@ unsigned char h2[WORLD_DIM * WORLD_DIM], c2[WORLD_DIM * WORLD_DIM];
 int16_t sintable[SINTABLE_ENTRIES];
 unsigned char scrbuf[128000];
 short numpalookups;
-unsigned char palookup[MAXPALOOKUPS<<8], palette[768];
+unsigned char palookup[PAL_SHADES * PAL_COLORS * PAL_LUTSHADES], /* MAXPALOOKUPS (64) << 8 */
+              palette[PAL_SHADES * PAL_COLORS * 3];
 
 // Operation commonly used in this file: akin to modulo operator, but for powers of 2.
 #define MOD_PO2(X, P) ((X) & ((P) - 1))
@@ -203,12 +206,13 @@ int main ()
 		if (keystatus[','] > 0)   // ,< Change blasting color
 		{
 			keystatus[','] = 0;
-			blastcol = ((blastcol+64)&255);
+			blastcol = MOD_PO2(blastcol + PAL_SHADES, PAL_SHADES * PAL_COLORS);
 		}
 		if (keystatus['.'] > 0)   // .> Change blasting color
 		{
 			keystatus['.'] = 0;
-			blastcol = ((blastcol+192)&255);
+			blastcol = MOD_PO2(blastcol + (PAL_SHADES * PAL_COLORS - PAL_SHADES * 1),
+					PAL_SHADES * PAL_COLORS);
 		}
 		if (keystatus[' '] > 0)
 		{
@@ -327,7 +331,7 @@ void loadboard ()
 
 void loadpalette ()
 {
-	long i, fil;
+	long fil;
 
 	if ((fil = open("palette.dat",O_RDONLY)) == -1)
 	{
@@ -335,9 +339,9 @@ void loadpalette ()
 		exit(0);
 	}
 
-	read(fil,&palette[0],768);
+	read(fil,palette,sizeof(palette));
 	read(fil,&numpalookups,2);
-	read(fil,&palookup[0],numpalookups<<8);
+	read(fil,palookup,numpalookups<<8);
 	close(fil);
 }
 
