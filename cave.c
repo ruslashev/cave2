@@ -47,21 +47,6 @@ unsigned char palookup[PAL_SHADES * PAL_COLORS * PAL_LUTSHADES], /* MAXPALOOKUPS
 
 volatile char keystatus[256];
 
-long scale(long a, long b, long c)
-{
-	return (a * b) / c;
-}
-
-long mulscale(long a, long b, long c)
-{
-	return (a * b) >> (c & 0xff);
-}
-
-long divscale(long a, long b, long c)
-{
-	return (a << (c & 0xff)) / b;
-}
-
 long groudiv(long a, long b)
 {
 	return ((a << 12) - posz) / ((b >> 8) & 0xffff);
@@ -407,8 +392,8 @@ void grouvline (short scr_column, long scandist)
 
 	dax = (scr_column<<1)-xdim;
 
-	incr[0] = cosval - scale(sinval,dax,xdim);
-	incr[1] = sinval + scale(cosval,dax,xdim);
+	incr[0] = cosval - (sinval * dax) / xdim;
+	incr[1] = sinval + (cosval * dax) / xdim;
 
 	if (incr[0] < 0) dir[0] = -1, incr[0] = -incr[0]; else dir[0] = 1;
 	if (incr[1] < 0) dir[1] = -1, incr[1] = -incr[1]; else dir[1] = 1;
@@ -420,13 +405,13 @@ void grouvline (short scr_column, long scandist)
 
 	if (incr[0] != 0)
 	{
-		dinc[0] = divscale(65536>>vidmode,incr[0],12);
-		dist[0] = mulscale(dinc[0],snx,10);
+		dinc[0] = ((65536>>vidmode) << 12) / incr[0];
+		dist[0] = (dinc[0] * snx) >> 10;
 	}
 	if (incr[1] != 0)
 	{
-		dinc[1] = divscale(65536>>vidmode,incr[1],12);
-		dist[1] = mulscale(dinc[1],sny,10);
+		dinc[1] = ((65536>>vidmode) << 12) / incr[1];
+		dist[1] = (dinc[1] * sny) >> 10;
 	}
 
 	um = (0     )-horiz;
