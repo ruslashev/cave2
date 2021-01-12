@@ -58,18 +58,15 @@ long drawtopslab(long edi, long ecx, unsigned char color)
 
 	carry = ecx & 1;
 	ecx >>= 1;
-
 	if (carry == 0)
 		goto skipdraw1a;
 
 	scrbuf[edi] = color;
-
 	edi += 80;
 
 skipdraw1a:
 	carry = ecx & 1;
 	ecx >>= 1;
-
 	if (carry == 0)
 		goto skipdraw2a;
 
@@ -97,18 +94,15 @@ long drawbotslab(long edi, long ecx, unsigned char color)
 
 	carry = ecx & 1;
 	ecx >>= 1;
-
 	if (carry == 0)
 		goto skipdraw1b;
 
 	scrbuf[edi] = color;
-
 	edi -= 80;
 
 skipdraw1b:
 	carry = ecx & 1;
 	ecx >>= 1;
-
 	if (carry == 0)
 		goto skipdraw2b;
 
